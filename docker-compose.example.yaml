@@ -1,0 +1,15 @@
+services:
+  terraria-sleeper:
+    image: local/terrariaserversleeper
+    container_name: tss
+    ports:
+      - "7777:7777"   # game port (BOTH MUST MATCH WHATS SET IN TSHOCK CONFIG.JSON)
+      - "7887:7887"   # fake/real API port (BOTH MUST MATCH WHATS SET IN TSHOCK CONFIG.JSON)
+    volumes:
+      - $HOME/terraria:/terraria  # mount Terraria world (MUST BE MOUNTED TO /terraria IN CONTAINER)
+    environment:
+      - IDLE_TIMEOUT=5m
+      - NTFY_TOPIC=https://ntfy.sh/tss-myrandomstring
+      - NTFY_AUTH=xxxxxxxx  # OPTIONAL: for protected ntfy topics
+      - WORLD_FILE=main.wld  # Set to name of world file that was previously generated (see https://hub.docker.com/r/ryshe/terraria for generating a world with docker)
+    restart: unless-stopped

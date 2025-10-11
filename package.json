@@ -1,0 +1,26 @@
+{
+  "name": "terrariaserversleeper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "terraria-sleeping-server.js",
+  "scripts": {
+    "build-tshock-docker": "docker build -t local/tshock-base -f tshock/Dockerfile ./tshock",
+    "build-sleeper-docker": "docker build -t local/terrariaserversleeper -f Dockerfile ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oonqt/terrariaServerSleeper.git"
+  },
+  "keywords": [],
+  "author": "Rechigo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/oonqt/terrariaServerSleeper/issues"
+  },
+  "homepage": "https://github.com/oonqt/terrariaServerSleeper#readme",
+  "dependencies": {
+    "axios": "^1.12.2",
+    "express": "^5.1.0",
+    "ms": "^2.1.3"
+  }
+}
