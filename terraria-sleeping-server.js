@@ -99,13 +99,9 @@ const startDummyServers = () => {
         // Start the real Terraria server
         startRealServer();
       } else {
+        socket.destroy();
         logger.info('Request made to dummy server, but request was not from terraria client');
       }
-      
-      socket.setTimeout(2000, () => {
-        logger.info('Connection timed out');
-        socket.destroy();
-      });
     });
   });
 
