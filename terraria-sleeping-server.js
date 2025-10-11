@@ -11,6 +11,7 @@ const Logger = require('./logger');
 const { version } = require('./package.json');
 
 const logger = new Logger('terraria-sleeping-server');
+const tServerLogger = new Logger('terraria-server');
 
 // Configuration
 
@@ -21,7 +22,8 @@ const NTFY_AUTH   = process.env.NTFY_AUTH;
 
 const DATA_ROOT = '/terraria';
 const TSHOCK_CONF_FILE = path.join(DATA_ROOT, "config.json");
-const SERVER_BINARY = '/tshock/TShock.Server';
+const SERVER_ROOT = '/tshock';
+const SERVER_BINARY = path.join(SERVER_ROOT, 'TShock.Server');
 
 // Validate essential config
 
@@ -31,7 +33,7 @@ if (!fs.existsSync(TSHOCK_CONF_FILE)) {
 }
 
 if (!IDLE_TIMEOUT || !WORLD_FILE) {
-  console.error('Missing required environment variables. Please set LISTEN_PORT, API_PORT, IDLE_TIMEOUT, and WORLD_FILE.');
+  logger.error('Missing required environment variables. Please set LISTEN_PORT, API_PORT, IDLE_TIMEOUT, and WORLD_FILE.');
   process.exit(1);
 }
 
@@ -55,7 +57,7 @@ function sendNtfy(message, tag, priority) {
   }
 
   axios.post(NTFY_TOPIC, message, { headers })
-    .catch(err => console.error('ntfy send error:', err.message));
+    .catch(err => logger.error('ntfy send error:', err.message));
 }
 
 // State variables
@@ -114,10 +116,23 @@ function startRealServer() {
   logger.info('Spawning real Terraria/TShock server...');
   sendNtfy('Terraria server is starting', 'arrows_clockwise');
   // Spawn the server process with given binary and config
-  serverProcess = spawn(SERVER_BINARY, ['-configpath', `${DATA_ROOT}`, '-world', path.join(DATA_ROOT, WORLD_FILE)], { stdio: 'inherit' });
+  serverProcess = spawn(SERVER_BINARY, ['-configpath', `${DATA_ROOT}`, '-world', path.join(DATA_ROOT, WORLD_FILE)], { 
+    cwd: SERVER_ROOT,
+    stdio: ['ignore', 'pipe', 'pipe'] 
+  });
+
+  serverProcess.stdout.on('data', (data) => {
+    const lines = data.toString().split('\n').filter(Boolean);
+    lines.forEach(line => tServerLogger.info(line));
+  });
+
+  serverProcess.stderr.on('data', (data) => {
+    const lines = data.toString().split('\n').filter(Boolean);
+    lines.forEach(line => tServerLogger.error(line));
+  });
 
   serverProcess.on('error', err => {
-    console.error('Error starting server process:', err);
+    logger.error('Error starting server process:', err);
     sendNtfy('Terraria server failed to start', 'face_with_thermometer', 4);
     // If spawning fails, return to offline state
     clearInterval(pollInterval);
@@ -174,7 +189,7 @@ function startRealServer() {
       }
     } catch (err) {
       // Ignore polling errors (e.g. server starting up not ready yet)
-      console.error('Error polling TShock API:', err.message);
+      logger.error('Error polling TShock API:', err.message);
     }
   }, 5000);
 }
