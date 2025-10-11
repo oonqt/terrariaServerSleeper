@@ -44,7 +44,8 @@ const serverName = tshockConfig.ServerName;
 const tshockServerPort = tshockConfig.ServerPort;
 
 // Helper to send ntfy notifications (via HTTP POST):contentReference[oaicite:6]{index=6}
-function sendNtfy(message, tag, priority) {
+
+const sendNtfy = (message, tag, priority) => {
   if (!NTFY_TOPIC) return;
   
   let headers = {
@@ -69,23 +70,42 @@ let pollInterval = null;
 let idleStart = null;
 
 // Function to start dummy TCP listener and fake API
-function startDummyServers() {
+const startDummyServers = () => {
   // Start dummy TCP server (accepts Terraria client connections)
   dummyServer = net.createServer((socket) => {
-    logger.info('Connection received on dummy server. Waking up real server...');
-    socket.end(); // Immediately end the dummy connection
+    let dataBuffer = Buffer.alloc(0);
 
-    // Stop the dummy and fake API servers
-    dummyServer.close(() => logger.info('Dummy server closed'));
-    dummyServer = null;
+    logger.info('Connection received on dummy server.');
 
-    if (apiServer) {
-      apiServer.close(() => logger.info('Dummy API server closed'));
-      apiServer = null;
-    }
+    socket.on('data', chunk => {
+      dataBuffer = Buffer.concat([dataBuffer, chunk]);
+      const dataString = dataBuffer.toString('utf8', 0, 12);
 
-    // Start the real Terraria server
-    startRealServer();
+      if (dataString === 'Terraria') {
+        logger.info('Detected real terraria server. Closing dummy servers and starting real tshock instance');
+      
+        socket.end(); // Immediately end the dummy connection
+    
+        // Stop the dummy and fake API servers
+        dummyServer.close(() => logger.info('Dummy server closed'));
+        dummyServer = null;
+    
+        if (apiServer) {
+          apiServer.close(() => logger.info('Dummy API server closed'));
+          apiServer = null;
+        }
+
+        socket.setTimeout(2000, () => {
+          logger.info('Connection timed out');
+          socket.destroy();
+        });
+    
+        // Start the real Terraria server
+        startRealServer();
+      } else {
+        logger.info('Request made to dummy server, but request was not from terraria client');
+      }
+    });
   });
 
   dummyServer.on('error', err => logger.error('Dummy server error:', err));
@@ -115,7 +135,7 @@ function startDummyServers() {
 }
 
 // Function to spawn the real Terraria server
-function startRealServer() {
+const startRealServer = () => {
   logger.info('Spawning real Terraria/TShock server...');
   sendNtfy('Terraria server is starting', 'arrows_clockwise');
   // Spawn the server process with given binary and config
