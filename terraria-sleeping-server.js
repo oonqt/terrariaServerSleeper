@@ -104,6 +104,7 @@ function startDummyServers() {
       numplayers: 0,
       maxplayers: maxPlayers,
       name: `${serverName} (Sleeping)`,
+      players: [],
       status: '200',
     });
   });
