@@ -102,6 +102,7 @@ function startDummyServers() {
       port: tshockServerPort,
       playercount: 'SLEEPING',
       maxplayers: maxPlayers,
+      status: 200,
       players: []  // no players
     });
   });
