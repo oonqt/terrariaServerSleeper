@@ -1,6 +1,6 @@
 {
   "name": "terrariaserversleeper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "terraria-sleeping-server.js",
   "scripts": {
