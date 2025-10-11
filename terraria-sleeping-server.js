@@ -100,8 +100,8 @@ function startDummyServers() {
   app.get('/v2/server/status', (req, res) => {
     res.json({
       port: tshockServerPort,
-      playercount: 'SLEEPING',
-      maxplayers: maxPlayers,
+      playercount: 0,
+      maxplayers: `${maxPlayers} (SLEEPING)`,
       status: '200',
       players: []  // no players
     });
