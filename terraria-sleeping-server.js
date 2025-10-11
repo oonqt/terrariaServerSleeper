@@ -89,22 +89,23 @@ const startDummyServers = () => {
         // Stop the dummy and fake API servers
         dummyServer.close(() => logger.info('Dummy server closed'));
         dummyServer = null;
-    
+        
         if (apiServer) {
           apiServer.close(() => logger.info('Dummy API server closed'));
           apiServer = null;
         }
-
-        socket.setTimeout(2000, () => {
-          logger.info('Connection timed out');
-          socket.destroy();
-        });
-    
+        
+        
         // Start the real Terraria server
         startRealServer();
       } else {
         logger.info('Request made to dummy server, but request was not from terraria client');
       }
+      
+      socket.setTimeout(2000, () => {
+        logger.info('Connection timed out');
+        socket.destroy();
+      });
     });
   });
 
