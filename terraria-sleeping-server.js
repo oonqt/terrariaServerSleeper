@@ -15,7 +15,7 @@ const tServerLogger = new Logger('terraria-server');
 
 // Configuration
 
-const IDLE_TIMEOUT = ms(process.env.IDLE_TIMEOUT, 10);
+const IDLE_TIMEOUT = process.env.IDLE_TIMEOUT;
 const WORLD_FILE = process.env.WORLD_FILE;
 const NTFY_TOPIC  = process.env.NTFY_TOPIC;
 const NTFY_AUTH   = process.env.NTFY_AUTH;
@@ -171,7 +171,7 @@ function startRealServer() {
         if (!idleStart) {
           idleStart = Date.now();
           logger.info('No players online. Starting idle timer...');
-        } else if (Date.now() - idleStart >= IDLE_TIMEOUT) {
+        } else if (Date.now() - idleStart >= ms(IDLE_TIMEOUT)) {
           logger.info('Idle timeout exceeded. Shutting down server...');
           sendNtfy('Terraria server is shutting down (idle)', 'stop_sign');
           // Gracefully kill the server process
