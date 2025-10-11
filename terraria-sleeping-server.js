@@ -79,7 +79,7 @@ const startDummyServers = () => {
 
     socket.on('data', chunk => {
       dataBuffer = Buffer.concat([dataBuffer, chunk]);
-      const dataString = dataBuffer.toString('utf8', 0, 12);
+      const dataString = dataBuffer.toString('utf8', 4, 12);
 
       if (dataString === 'Terraria') {
         logger.info('Detected real terraria server. Closing dummy servers and starting real tshock instance');
