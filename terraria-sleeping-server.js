@@ -40,6 +40,7 @@ if (!IDLE_TIMEOUT || !WORLD_FILE) {
 const tshockConfig = JSON.parse(fs.readFileSync(TSHOCK_CONF_FILE)).Settings;
 const restAPIPort = tshockConfig.RestApiPort;
 const maxPlayers = tshockConfig.MaxSlots;
+const serverName = tshockConfig.ServerName;
 const tshockServerPort = tshockConfig.ServerPort;
 
 // Helper to send ntfy notifications (via HTTP POST):contentReference[oaicite:6]{index=6}
@@ -100,10 +101,10 @@ function startDummyServers() {
   app.get('/v2/server/status', (req, res) => {
     res.json({
       port: tshockServerPort,
-      playercount: 0,
-      maxplayers: `${maxPlayers} (SLEEPING)`,
+      numplayers: 0,
+      maxplayers: maxPlayers,
+      name: `${serverName} (Sleeping)`,
       status: '200',
-      players: []  // no players
     });
   });
 
