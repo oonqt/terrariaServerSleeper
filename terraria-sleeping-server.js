@@ -95,7 +95,6 @@ const startDummyServers = () => {
           apiServer = null;
         }
         
-        
         // Start the real Terraria server
         startRealServer();
       } else {
@@ -188,9 +187,6 @@ const startRealServer = () => {
           if (serverProcess) {
             serverProcess.stdin.write('exit\n');
           }
-
-          clearInterval(pollInterval);
-          pollInterval = null;
         }
       } else {
         if (idleStart) {
