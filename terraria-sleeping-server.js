@@ -136,10 +136,7 @@ const startRealServer = () => {
   logger.info('Spawning real Terraria/TShock server...');
   sendNtfy('Terraria server is starting', 'arrows_clockwise');
   // Spawn the server process with given binary and config
-  serverProcess = spawn(SERVER_BINARY, ['-configpath', `${DATA_ROOT}`, '-world', path.join(DATA_ROOT, WORLD_FILE)], { 
-    cwd: SERVER_ROOT,
-    stdio: ['ignore', 'pipe', 'pipe'] 
-  });
+  serverProcess = spawn(SERVER_BINARY, ['-configpath', `${DATA_ROOT}`, '-world', path.join(DATA_ROOT, WORLD_FILE)]);
 
   serverProcess.stdout.on('data', (data) => {
     const lines = data.toString().split('\n').filter(Boolean);
@@ -177,38 +174,32 @@ const startRealServer = () => {
   // Poll the TShock API every 5 seconds for player count
   pollInterval = setInterval(async () => {
     try {
-      // Query server status; expects JSON with playercount
-      const res = await axios.get(`http://localhost:${restAPIPort}/status`);
-      const data = res.data;
-      const count = data.playercount != null
-        ? data.playercount
-        : (data.players || []).length;
-      // If no players online
-      if (count === 0) {
+      const { data } = await axios.get(`http://localhost:${restAPIPort}/status`);
+
+      if (data.playercount === 0) {
         if (!idleStart) {
           idleStart = Date.now();
           logger.info('No players online. Starting idle timer...');
         } else if (Date.now() - idleStart >= ms(IDLE_TIMEOUT)) {
           logger.info('Idle timeout exceeded. Shutting down server...');
           sendNtfy('Terraria server is shutting down (idle)', 'stop_sign');
-          // Gracefully kill the server process
+
+          // Attempt safe shutdown of server to prevent data loss
           if (serverProcess) {
-            serverProcess.kill();
-            serverProcess = null;
+            serverProcess.stdin.write('exit\n');
           }
-          // Stop polling; exit done in 'exit' handler above
+
           clearInterval(pollInterval);
           pollInterval = null;
         }
       } else {
-        // Reset idle timer if players are online
         if (idleStart) {
           logger.info('Player connected, resetting idle timer.');
         }
+
         idleStart = null;
       }
     } catch (err) {
-      // Ignore polling errors (e.g. server starting up not ready yet)
       logger.error('Error polling TShock API:', err.message);
     }
   }, 5000);
