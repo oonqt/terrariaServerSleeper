@@ -98,7 +98,7 @@ const startDummyServers = () => {
         // Start the real Terraria server
         startRealServer();
       } else {
-        socket.destroy();
+        socket.end();
         logger.info('Request made to dummy server, but request was not from terraria client');
       }
     });
